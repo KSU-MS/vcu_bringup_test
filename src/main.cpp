@@ -2,6 +2,7 @@
 #include <pindefs.h>
 #include <ADC_SPI.h>
 #include <FlexCAN_T4.h>
+#include <ksu_dbc.h>
 FlexCAN_T4<CAN1, RX_SIZE_1024, TX_SIZE_1024> can1;
 FlexCAN_T4<CAN2, RX_SIZE_1024, TX_SIZE_1024> can2;
 FlexCAN_T4<CAN3, RX_SIZE_1024, TX_SIZE_1024> can3;
@@ -10,6 +11,9 @@ float channel1reading, channel2reading, channel3reading, channel4reading;
 float readings[]={channel1reading,channel2reading,channel3reading,channel4reading};
 ADC_SPI spi_adc;
 uint16_t glv_i_sense;
+
+can_obj_ksu_dbc_h_t ksu_can_obj_t;
+
 void InitCAN()
 {
   // In CAN2.0 mode, setRegion doesn't exist, you have 64 mailboxes on Teensy 4.0, and 16 on Teensy 3.x.
@@ -81,24 +85,21 @@ void setup() {
 void loop() {
   for (uint64_t i = 0; i <(sizeof(ANALOG_INPUTS)/sizeof(ANALOG_INPUTS[0])); i++){
     Serial.printf("reading pin  %d: ",ANALOG_INPUTS[i]);
+    Serial.print(" "+sensor_names[i] + " ");
     Serial.print(analogRead(ANALOG_INPUTS[i]));
     if(ANALOG_INPUTS[i]==GLV_ISENSE){
       glv_i_sense=analogRead(GLV_ISENSE);
     }
     Serial.print("\n");
-    delay(100);
   }
   for (uint64_t i = 0; i <(sizeof(DIGITAL_OUTPUTS)/sizeof(DIGITAL_OUTPUTS[0])); i++){
     Serial.printf("toggle pin %d\n",DIGITAL_OUTPUTS[i]);
     analogWrite(DIGITAL_OUTPUTS[i],fanduty);
-    delay(100);
   }
-  // for (int i = 0; i< 4; i++){
-  //   readings[i]=static_cast<float>(spi_adc.read_adc(i));
-  //   Serial.printf("Spi adc channel %d, reading: %f\n",i,(static_cast<float>(spi_adc.read_adc(i)))/ADC_CONVERSION_FACTOR);
-  //   Serial.printf("%f\n",(static_cast<float>(spi_adc.read_adc(i)))/ADC_CONVERSION_FACTOR);
-
-  // }
+  for (int i = 0; i< 4; i++){
+    readings[i]=static_cast<float>(spi_adc.read_adc(i));
+    Serial.printf("Spi adc channel %d, reading: %f\n",i,(static_cast<float>(spi_adc.read_adc(i)))/ADC_CONVERSION_FACTOR);
+  }
   CAN_message_t msg;
   msg.id = 0x01;
   for ( uint8_t i = 0; i < 8; i++ ){
@@ -113,7 +114,10 @@ void loop() {
   can2.write(msg);
   can3.write(msg);
   fanduty+=0x10;
-  Serial.printf("%f\t%f\t%f\t%f\n",readings[0],readings[1],readings[2],readings[3]);
   delay(500);
 }
 
+// int unpack_flexcan_msg(CAN_message_t message,can_obj_ksu_dbc_h_t *out){
+//   uint64_t data = message.buf[0];
+//   return unpack_message(out,message.id,data,message.len,message.timestamp);
+// }

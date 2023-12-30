@@ -31,11 +31,11 @@ uint8_t DIGITAL_OUTPUTS[] = {BUZZER,LOWSIDE1,LOWSIDE2};
 
 #define ADC_RESOLUTION 4095
 #define ADC_VREF 5.0
-#define ADC_CONVERSION_FACTOR (ADC_RESOLUTION * ADC_VREF)
+#define ADC_CONVERSION_FACTOR (ADC_RESOLUTION / ADC_VREF)
 
 #define NUM_TX_MAILBOXES 32
 #define NUM_RX_MAILBOXES 32
 uint8_t ANALOG_INPUTS[] = {WSFL,WSFR,SDCVSENSE,SDCISENSE,BSPDSENSE,GLV_VSENSE,GLV_ISENSE,_5V_VSENSE,A9,A10};
-String sensor_names[] = {"wsfl","wsfr","sdcvsense","sdcisense","bspdsense","glv_vsense","5v vsense","a9","a10"};
+String sensor_names[] = {"wsfl","wsfr","sdcvsense","sdcisense","bspdsense","glv_vsense","glv_isense","5v vsense","a9","a10"};
 
 #endif
